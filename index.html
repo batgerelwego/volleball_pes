@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Гар бөмбөгийн тэмцээн — оноо</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Fira+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EEF1; --surf:#FFFFFF; --ink:#0F2236; --mut:#5A6B7B; --line:#CBD5DD;
+  --court:#1F5E8C; --hot:#E4572E; --ok:#2E7D5B; --board:#0B1E30; --boardink:#F2F6FA;
+  --head:'Oswald','Arial Narrow','Roboto Condensed',sans-serif;
+  --body:'Fira Sans','Segoe UI',Roboto,Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#0A1622;--surf:#112334;--ink:#E6EEF5;--mut:#8FA3B5;--line:#223A50;--court:#5BA3D6;--hot:#FF7A4D;--ok:#52C08F;--board:#06121D}
+}
+:root[data-theme="dark"]{--bg:#0A1622;--surf:#112334;--ink:#E6EEF5;--mut:#8FA3B5;--line:#223A50;--court:#5BA3D6;--hot:#FF7A4D;--ok:#52C08F;--board:#06121D}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:16px 16px 48px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:8px 0 14px}
+header.top h1{font-family:var(--head);font-weight:700;font-size:28px;letter-spacing:.01em;margin:0;line-height:1.1}
+nav.tabs{display:flex;gap:4px;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:4px;margin-left:auto;overflow-x:auto;max-width:100%}
+nav.tabs button{border:0;background:transparent;padding:8px 14px;border-radius:7px;cursor:pointer;color:var(--mut);font-weight:500;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{background:var(--court);color:#fff}
+nav.tabs button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,.mrow:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.card h2{font-family:var(--head);font-weight:500;font-size:20px;margin:0 0 12px}
+.muted{color:var(--mut)}
+.btn{border:1px solid var(--line);background:var(--surf);padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:500;min-height:40px}
+.btn:hover{border-color:var(--court)}
+.btn.pri{background:var(--court);border-color:var(--court);color:#fff}
+.btn.hot{background:var(--hot);border-color:var(--hot);color:#fff}
+.btn.danger{color:var(--hot);border-color:var(--hot)}
+.btn.danger.armed{background:var(--hot);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sm{padding:5px 10px;min-height:32px;font-size:14px}
+input[type=text],input[type=number],select{border:1px solid var(--line);background:var(--surf);border-radius:8px;padding:9px 12px;min-height:40px;max-width:100%}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.empty{padding:28px 12px;text-align:center;color:var(--mut)}
+/* matches */
+.round{margin-bottom:18px}
+.round h3{font-family:var(--head);font-weight:500;font-size:16px;margin:0 0 8px;color:var(--mut)}
+.mrow{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px;align-items:center;padding:12px 14px;background:var(--surf);border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer;width:100%;text-align:left}
+.mrow:hover{border-color:var(--court)}
+.mrow .h{text-align:right;font-weight:500}
+.mrow .a{font-weight:500}
+.mrow .sc{font-family:var(--head);font-size:22px;font-weight:700;min-width:70px;text-align:center}
+.badge{font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.badge.live{background:var(--hot);border-color:var(--hot);color:#fff}
+.badge.done{border-color:var(--ok);color:var(--ok)}
+/* board */
+.board{position:relative;overflow:hidden;background:var(--board);color:var(--boardink);border-radius:16px;padding:22px 18px 18px;margin-bottom:16px}
+.board svg.court{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.board>*:not(svg){position:relative}
+.board .meta{text-align:center;color:#9FB6CB;font-size:14px;margin-bottom:6px}
+.scoreline{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start}
+.scoreline .tm{text-align:center}
+.scoreline .tm h2{font-family:var(--head);font-weight:500;font-size:clamp(17px,3.6vw,28px);margin:0 0 8px;line-height:1.15;overflow-wrap:anywhere}
+.digits{font-family:var(--head);font-weight:700;font-size:clamp(64px,17vw,140px);line-height:.95;display:flex;gap:.12em;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.digits i{font-style:normal;color:var(--hot)}
+.clock{font-family:var(--head);font-weight:500;font-size:clamp(24px,5vw,40px);text-align:center;font-variant-numeric:tabular-nums;margin-top:4px;color:#FFD9C9}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:28px}
+.chip{background:rgba(228,87,46,.2);border:1px solid var(--hot);border-radius:6px;padding:2px 8px;font-size:13px;font-variant-numeric:tabular-nums}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.board .btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22);color:var(--boardink)}
+.board .btn.hot{background:var(--hot);border-color:var(--hot);color:#fff}
+.board .btn.danger{color:#FFB39B;border-color:#FFB39B}
+.board .btn.danger.armed{background:var(--hot);color:#fff}
+.board input[type=text]{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#fff;width:84px;text-align:center}
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.side h2{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.evgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.evgrid .btn{padding:8px 4px}
+.goal{grid-column:1/-1;font-size:18px;min-height:52px}
+.lab{display:block;font-size:13px;color:var(--mut);margin-bottom:4px}
+.log{list-style:none;margin:0;padding:0}
+.log li{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.log li:last-child{border:0}
+.log .t{font-family:var(--head);font-variant-numeric:tabular-nums;color:var(--mut)}
+.dot{display:inline-block;width:10px;height:14px;border-radius:2px;margin-right:6px;vertical-align:-2px}
+.dot.y{background:#F2C200}.dot.r{background:#D62828}
+/* table */
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{padding:9px 8px;text-align:center;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--mut);font-size:14px}
+td.n,th.n{text-align:left}
+td.pts{font-family:var(--head);font-weight:700;font-size:18px}
+tr.first td{background:color-mix(in srgb,var(--court) 12%,transparent)}
+.pos{width:36px;color:var(--mut)}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.list li:last-child{border:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+#toast.on{opacity:1}
+@media (max-width:640px){
+  .sides,.grid2{grid-template-columns:1fr}
+  .mrow{grid-template-columns:1fr auto 1fr}
+  .mrow .badge{grid-column:1/-1;justify-self:center}
+  nav.tabs{margin-left:0;width:100%}
+  nav.tabs button{flex:1;padding:8px 8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 id="ttl"></h1>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </header>
+  <main id="app"></main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var KEY='handball-tournament-v1';
+var D={name:'Гар бөмбөгийн тэмцээн',teams:[],matches:[],sel:null,set:{half:30,win:2,draw:1,legs:1}};
+var S=load();
+var no={h:'',a:''};
+var view='matches',running=false,last=0,armed=null,lastSave=0,toastT=null;
+
+function load(){
+  try{var r=localStorage.getItem(KEY);
+    if(r){var o=JSON.parse(r);
+      return {name:o.name||D.name,teams:o.teams||[],matches:o.matches||[],sel:o.sel||null,set:Object.assign({},D.set,o.set||{})};}
+  }catch(e){}
+  return JSON.parse(JSON.stringify(D));
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function tn(id){var t=S.teams.find(function(t){return t.id===id;});return t?t.name:'—';}
+function cur(){return S.matches.find(function(m){return m.id===S.sel;})||null;}
+function fmt(s){s=Math.max(0,Math.floor(s));var m=Math.floor(s/60),x=s%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x;}
+function score(m,side){return m.events.filter(function(e){return e.side===side&&(e.type==='goal'||e.type==='pen');}).length;}
+function toast(t){var el=document.getElementById('toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('on');},2200);}
+function beep(){try{var C=window.AudioContext||window.webkitAudioContext;var c=new C();var o=c.createOscillator();var g=c.createGain();o.frequency.value=880;g.gain.value=.15;o.connect(g);g.connect(c.destination);o.start();setTimeout(function(){o.stop();c.close();},700);}catch(e){}}
+function needConfirm(key){
+  if(armed===key){armed=null;return true;}
+  armed=key;render();
+  setTimeout(function(){if(armed===key){armed=null;render();}},3000);
+  return false;
+}
+function cbtn(key,label,cls,attrs){
+  var on=armed===key;
+  return '<button class="btn danger '+(cls||'')+(on?' armed':'')+'" data-key="'+key+'" '+(attrs||'')+'>'+(on?'Баталгаажуулах':label)+'</button>';
+}
+
+/* ---------- timer ---------- */
+setInterval(function(){
+  if(!running)return;
+  var m=cur();
+  if(!m||m.status!=='live'){running=false;return;}
+  var now=Date.now(),dt=(now-last)/1000;last=now;
+  m.elapsed+=dt;
+  var H=S.set.half*60;
+  if(m.phase==='h1'&&m.elapsed>=H){m.elapsed=H;m.phase='break';running=false;beep();}
+  else if(m.phase==='h2'&&m.elapsed>=2*H){m.elapsed=2*H;m.phase='end';running=false;beep();}
+  if(!running){save();render();return;}
+  tickUI();
+  if(now-lastSave>5000){save();lastSave=now;}
+},200);
+
+function suspHTML(m,side){
+  if(m.status!=='live')return '';
+  return m.events.filter(function(e){return e.type==='susp'&&e.side===side&&(m.elapsed-e.t)<120;})
+    .map(function(e){return '<span class="chip">2 мин · '+(e.no?'№'+esc(e.no)+' · ':'')+fmt(120-(m.elapsed-e.t))+'</span>';}).join('');
+}
+function tickUI(){
+  if(view!=='board')return;
+  var m=cur();if(!m)return;
+  var c=document.getElementById('clock');if(c)c.textContent=fmt(m.elapsed);
+  var h=document.getElementById('suspH'),a=document.getElementById('suspA');
+  if(h)h.innerHTML=suspHTML(m,'h');
+  if(a)a.innerHTML=suspHTML(m,'a');
+}
+
+/* ---------- derived ---------- */
+function standings(){
+  var map={};
+  S.teams.forEach(function(t){map[t.id]={id:t.id,name:t.name,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};});
+  S.matches.forEach(function(m){
+    if(m.status!=='done'||!map[m.home]||!map[m.away])return;
+    var hs=score(m,'h'),as=score(m,'a'),H=map[m.home],A=map[m.away];
+    H.p++;A.p++;H.gf+=hs;H.ga+=as;A.gf+=as;A.ga+=hs;
+    if(hs>as){H.w++;A.l++;H.pts+=+S.set.win;A.pts+=+S.set.loss||0;}
+    else if(hs<as){A.w++;H.l++;A.pts+=+S.set.win;}
+    else{H.d++;A.d++;H.pts+=+S.set.draw;A.pts+=+S.set.draw;}
+  });
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(x,y){
+    return y.pts-x.pts||(y.gf-y.ga)-(x.gf-x.ga)||y.gf-x.gf||x.name.localeCompare(y.name);
+  });
+}
+function scorers(){
+  var map={};
+  S.matches.forEach(function(m){
+    m.events.forEach(function(e){
+      if((e.type!=='goal'&&e.type!=='pen')||!e.no)return;
+      var tid=e.side==='h'?m.home:m.away,k=tid+'|'+e.no;
+      if(!map[k])map[k]={team:tid,no:e.no,g:0};
+      map[k].g++;
+    });
+  });
+  return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return b.g-a.g;}).slice(0,10);
+}
+
+/* ---------- views ---------- */
+var EVL={goal:'Гоол',pen:'7м гоол',susp:'2 минут',yellow:'Шар карт',red:'Улаан карт',to:'Таймаут'};
+var STL={upcoming:'Хүлээгдэж буй',live:'Явагдаж буй',done:'Дууссан'};
+
+function vMatches(){
+  var h='';
+  if(!S.matches.length){
+    h+='<div class="card empty">Тоглолт алга байна. «Багууд» хэсэгт баг нэмээд тоглолтын хуваарь үүсгэнэ үү.</div>';
+  }else{
+    var rounds={};
+    S.matches.forEach(function(m){(rounds[m.round]=rounds[m.round]||[]).push(m);});
+    Object.keys(rounds).sort(function(a,b){return a-b;}).forEach(function(r){
+      h+='<section class="round"><h3>'+r+'-р тойрог</h3>';
+      rounds[r].forEach(function(m){
+        var sc=m.status==='upcoming'?'–':score(m,'h')+' : '+score(m,'a');
+        h+='<button class="mrow" data-act="open" data-id="'+m.id+'"><span class="h">'+esc(tn(m.home))+'</span><span class="sc">'+sc+'</span><span class="a">'+esc(tn(m.away))+'</span><span class="badge '+m.status+'">'+STL[m.status]+'</span></button>';
+      });
+      h+='</section>';
+    });
+  }
+  if(S.teams.length>=2){
+    var opts=S.teams.map(function(t){return '<option value="'+t.id+'">'+esc(t.name)+'</option>';}).join('');
+    h+='<div class="card"><h2>Тоглолт нэмэх</h2><div class="row"><select id="mh" aria-label="Эзэн баг">'+opts+'</select><span class="muted">vs</span><select id="ma" aria-label="Зочин баг">'+opts+'</select><button class="btn pri" data-act="addmatch">Нэмэх</button></div></div>';
+  }
+  return h;
+}
+
+function phaseLabel(m){
+  if(m.status==='done')return 'Тоглолт дууссан';
+  if(m.status==='upcoming')return 'Эхлээгүй';
+  return {h1:'1-р тал',break:'Завсарлага',h2:'2-р тал',end:'Хугацаа дууссан'}[m.phase];
+}
+
+function sidePanel(m,side){
+  var team=side==='h'?m.home:m.away,dis=m.status==='done'?' disabled':'';
+  var tos=m.events.filter(function(e){return e.type==='to'&&e.side===side;}).length;
+  return '<section class="card side"><h2><span>'+esc(tn(team))+'</span><span class="muted" style="font-size:14px;font-family:var(--body)">Таймаут: '+tos+'/3</span></h2>'
+   +'<label class="lab" for="no'+side+'">Тоглогчийн дугаар (заавал биш)</label>'
+   +'<input type="text" inputmode="numeric" maxlength="3" id="no'+side+'" data-in="no" data-side="'+side+'" value="'+esc(no[side])+'" style="width:110px">'
+   +'<div class="evgrid">'
+   +'<button class="btn hot goal" data-act="ev" data-type="goal" data-side="'+side+'"'+dis+'>+ Гоол</button>'
+   +'<button class="btn" data-act="ev" data-type="pen" data-side="'+side+'"'+dis+'>7м гоол</button>'
+   +'<button class="btn" data-act="ev" data-type="susp" data-side="'+side+'"'+dis+'>2 минут</button>'
+   +'<button class="btn" data-act="ev" data-type="to" data-side="'+side+'"'+dis+'>Таймаут</button>'
+   +'<button class="btn" data-act="ev" data-type="yellow" data-side="'+side+'"'+dis+'><span class="dot y"></span>Шар</button>'
+   +'<button class="btn" data-act="ev" data-type="red" data-side="'+side+'"'+dis+'><span class="dot r"></span>Улаан</button>'
+   +'</div></section>';
+}
+
+function vBoard(){
+  var m=cur();
+  if(!m)return '<div class="card empty">Тоглолтоо «Тоглолтууд» хэсгээс сонгоно уу.</div>';
+  var hs=score(m,'h'),as=score(m,'a');
+  var H=S.set.half*60,ctrl='';
+  if(m.status==='done'){
+    ctrl='<button class="btn" data-act="reopen">Дахин нээх</button>';
+  }else{
+    if(m.phase==='break')ctrl+='<button class="btn hot" data-act="next">2-р тал эхлүүлэх</button>';
+    else if(m.phase==='end')ctrl+='';
+    else if(running)ctrl+='<button class="btn hot" data-act="pause">Түр зогсоох</button>';
+    else ctrl+='<button class="btn hot" data-act="start">'+(m.elapsed>0&&m.elapsed!==H?'Үргэлжлүүлэх':'Эхлүүлэх')+'</button>';
+    ctrl+=cbtn('finish','Тоглолт дуусгах','','data-act="finish"');
+  }
+  var clockEdit=m.status==='done'?'':'<div class="ctrl" style="margin-top:10px"><label class="muted" for="clk" style="font-size:13px;color:#9FB6CB">Цаг засах</label><input type="text" id="clk" value="'+fmt(m.elapsed)+'" style="width:84px" aria-label="Цаг мм:сс"><button class="btn sm" data-act="setclock">Хадгалах</button></div>';
+  var h='<section class="board">'
+   +'<svg class="court" viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><g fill="none" stroke="#fff" stroke-opacity=".09" stroke-width="2"><path d="M120 200 A80 80 0 0 1 280 200"/><path d="M80 200 A120 120 0 0 1 320 200" stroke-dasharray="8 7"/><line x1="195" y1="120" x2="205" y2="120"/></g></svg>'
+   +'<div class="meta">'+m.round+'-р тойрог · <span id="phase">'+phaseLabel(m)+'</span></div>'
+   +'<div class="scoreline"><div class="tm"><h2>'+esc(tn(m.home))+'</h2><div class="chips" id="suspH">'+suspHTML(m,'h')+'</div></div>'
+   +'<div><div class="digits"><span>'+hs+'</span><i>:</i><span>'+as+'</span></div><div class="clock" id="clock">'+fmt(m.elapsed)+'</div></div>'
+   +'<div class="tm"><h2>'+esc(tn(m.away))+'</h2><div class="chips" id="suspA">'+suspHTML(m,'a')+'</div></div></div>'
+   +'<div class="ctrl">'+ctrl+'</div>'+clockEdit+'</section>';
+  h+='<div class="sides">'+sidePanel(m,'h')+sidePanel(m,'a')+'</div>';
+  var evs=m.events.slice().reverse();
+  h+='<section class="card"><h2>Тоглолтын явц</h2>';
+  if(!evs.length)h+='<div class="muted">Одоогоор үйл явдал бүртгэгдээгүй.</div>';
+  else{h+='<ul class="log">'+evs.map(function(e){
+    var dot=e.type==='yellow'?'<span class="dot y"></span>':e.type==='red'?'<span class="dot r"></span>':'';
+    var tm=esc(tn(e.side==='h'?m.home:m.away));
+    return '<li><span class="t">'+fmt(e.t)+'</span><span>'+dot+'<b>'+EVL[e.type]+'</b> · '+tm+(e.no?' · №'+esc(e.no):'')+'</span><button class="btn sm" data-act="evdel" data-id="'+e.id+'" aria-label="Устгах">Устгах</button></li>';
+  }).join('')+'</ul>';}
+  h+='</section>';
+  return h;
+}
+
+function vTable(){
+  var st=standings(),h='<section class="card"><h2>Байр эзлэлт</h2>';
+  if(!st.length)return h+'<div class="empty">Баг нэмээгүй байна.</div></section>';
+  h+='<div class="tblwrap"><table><thead><tr><th class="pos">#</th><th class="n">Баг</th><th>Т</th><th>Х</th><th>Т/Х</th><th>Ү</th><th>Орсон</th><th>Алдсан</th><th>Зөрүү</th><th>Оноо</th></tr></thead><tbody>';
+  st.forEach(function(t,i){
+    var gd=t.gf-t.ga;
+    h+='<tr class="'+(i===0&&t.p>0?'first':'')+'"><td class="pos">'+(i+1)+'</td><td class="n"><b>'+esc(t.name)+'</b></td><td>'+t.p+'</td><td>'+t.w+'</td><td>'+t.d+'</td><td>'+t.l+'</td><td>'+t.gf+'</td><td>'+t.ga+'</td><td>'+(gd>0?'+':'')+gd+'</td><td class="pts">'+t.pts+'</td></tr>';
+  });
+  h+='</tbody></table></div><p class="muted" style="font-size:13px;margin:10px 0 0">Т — тоглолт, Х — хожил, Т/Х — тэнцсэн, Ү — хожигдсон. Зөвхөн дууссан тоглолт тооцогдоно.</p></section>';
+  var sc=scorers();
+  h+='<section class="card"><h2>Шилдэг довтлогчид</h2>';
+  if(!sc.length)h+='<div class="muted">Гоол оруулсан тоглогчийн дугаарыг самбар дээр бүртгэвэл энд харагдана.</div>';
+  else h+='<ul class="list">'+sc.map(function(s){return '<li><span><b>№'+esc(s.no)+'</b> · '+esc(tn(s.team))+'</span><span style="font-family:var(--head);font-size:18px;font-weight:700">'+s.g+'</span></li>';}).join('')+'</ul>';
+  return h+'</section>';
+}
+
+function vTeams(){
+  var h='<div class="grid2"><section class="card"><h2>Багууд ('+S.teams.length+')</h2>'
+   +'<div class="row" style="margin-bottom:12px"><input type="text" id="newTeam" placeholder="Багийн нэр" maxlength="40" aria-label="Багийн нэр" style="flex:1;min-width:160px"><button class="btn pri" data-act="addteam">Нэмэх</button></div>';
+  if(!S.teams.length)h+='<div class="muted">Дор хаяж 2 баг нэмнэ үү.</div>';
+  else h+='<ul class="list">'+S.teams.map(function(t){return '<li><span>'+esc(t.name)+'</span>'+cbtn('dt'+t.id,'Хасах','sm','data-act="delteam" data-id="'+t.id+'"')+'</li>';}).join('')+'</ul>';
+  h+='</section><section class="card"><h2>Хуваарь үүсгэх</h2>'
+   +'<p class="muted" style="margin-top:0">Бүх баг хоорондоо нэг буюу хоёр удаа тоглох хуваарийг автоматаар үүсгэнэ.</p>'
+   +'<div class="row" style="margin-bottom:12px"><label for="legs">Тойргийн тоо</label><select id="legs" data-in="legs"><option value="1"'+(S.set.legs==1?' selected':'')+'>Нэг удаа</option><option value="2"'+(S.set.legs==2?' selected':'')+'>Хоёр удаа (гэр, зочин)</option></select></div>'
+   +(S.matches.length?cbtn('gen','Хуваарь шинээр үүсгэх (хуучин тоглолт устна)','','data-act="gen"'):'<button class="btn pri" data-act="gen" data-key="">Хуваарь үүсгэх</button>')
+   +'</section></div>';
+  h+='<section class="card"><h2>Тохиргоо</h2><div class="row">'
+   +'<div><label class="lab" for="sName">Тэмцээний нэр</label><input type="text" id="sName" data-in="name" value="'+esc(S.name)+'" style="width:260px"></div>'
+   +'<div><label class="lab" for="sHalf">Тал бүр (минут)</label><input type="number" id="sHalf" data-in="half" min="1" max="60" value="'+S.set.half+'" style="width:100px"></div>'
+   +'<div><label class="lab" for="sWin">Хожсон (оноо)</label><input type="number" id="sWin" data-in="win" min="0" max="9" value="'+S.set.win+'" style="width:100px"></div>'
+   +'<div><label class="lab" for="sDraw">Тэнцсэн (оноо)</label><input type="number" id="sDraw" data-in="draw" min="0" max="9" value="'+S.set.draw+'" style="width:100px"></div>'
+   +'</div><div style="margin-top:16px">'+cbtn('reset','Бүх мэдээллийг устгах','','data-act="reset"')+'</div></section>';
+  return h;
+}
+
+var TABS=[['matches','Тоглолтууд'],['board','Самбар'],['table','Байр эзлэлт'],['teams','Багууд']];
+function render(){
+  document.getElementById('ttl').textContent=S.name;
+  document.title=S.name+' — оноо';
+  document.getElementById('tabs').innerHTML=TABS.map(function(t){return '<button role="tab" data-act="tab" data-v="'+t[0]+'" aria-selected="'+(view===t[0])+'">'+t[1]+'</button>';}).join('');
+  var f={matches:vMatches,board:vBoard,table:vTable,teams:vTeams}[view];
+  var focusId=document.activeElement&&document.activeElement.id;
+  document.getElementById('app').innerHTML=f();
+  if(focusId){var el=document.getElementById(focusId);if(el&&el.tagName==='INPUT'){el.focus();try{var l=el.value.length;el.setSelectionRange(l,l);}catch(e){}}}
+}
+
+/* ---------- actions ---------- */
+function addEv(type,side){
+  var m=cur();if(!m||m.status==='done')return;
+  if(type==='to'&&m.events.filter(function(e){return e.type==='to'&&e.side===side;}).length>=3){toast('Багийн 3 таймаут дууссан');return;}
+  if(m.status==='upcoming')m.status='live';
+  m.events.push({id:uid(),t:Math.floor(m.elapsed),side:side,type:type,no:(type==='to'?'':(no[side]||'').trim())});
+  save();render();
+  if(type==='goal'||type==='pen')toast('Гоол! '+score(m,'h')+' : '+score(m,'a'));
+}
+function roundRobin(){
+  var ids=S.teams.map(function(t){return t.id;});
+  if(ids.length%2)ids.push(null);
+  var n=ids.length,rounds=[],arr=ids.slice();
+  for(var r=0;r<n-1;r++){
+    var pairs=[];
+    for(var i=0;i<n/2;i++){
+      var a=arr[i],b=arr[n-1-i];
+      if(a&&b)pairs.push((i===0&&r%2)||(i>0&&(r+i)%2)?[b,a]:[a,b]);
+    }
+    rounds.push(pairs);
+    arr=[arr[0]].concat([arr[n-1]]).concat(arr.slice(1,n-1));
+  }
+  return rounds;
+}
+function newMatch(round,h,a){return {id:uid(),round:round,home:h,away:a,status:'upcoming',elapsed:0,phase:'h1',events:[]};}
+function parseClock(v){var p=String(v).split(':');if(p.length!==2)return null;var m=parseInt(p[0],10),s=parseInt(p[1],10);if(isNaN(m)||isNaN(s)||s<0||s>59||m<0)return null;return m*60+s;}
+
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-act]');if(!b)return;
+  var act=b.dataset.act,m=cur();
+  if(b.dataset.key&&!needConfirm(b.dataset.key))return;
+  switch(act){
+    case 'tab':view=b.dataset.v;render();break;
+    case 'open':running=false;S.sel=b.dataset.id;save();view='board';render();break;
+    case 'start':
+      if(!m)break;
+      if(m.status==='upcoming')m.status='live';
+      if(m.phase==='break')m.phase='h2';
+      running=true;last=Date.now();save();render();break;
+    case 'pause':running=false;save();render();break;
+    case 'next':if(m){m.phase='h2';running=true;last=Date.now();save();render();}break;
+    case 'finish':if(m){running=false;m.status='done';save();render();toast('Тоглолт дууслаа: '+score(m,'h')+' : '+score(m,'a'));}break;
+    case 'reopen':if(m){m.status='live';if(m.phase==='break')m.phase='h2';save();render();}break;
+    case 'setclock':{
+      var v=parseClock(document.getElementById('clk').value);
+      if(v===null||!m){toast('Цагийг мм:сс хэлбэрээр оруулна уу');break;}
+      var H=S.set.half*60;
+      v=Math.min(v,2*H);m.elapsed=v;
+      m.phase=v<H?'h1':v===H?'break':v<2*H?'h2':'end';
+      if(m.status==='upcoming'&&v>0)m.status='live';
+      running=false;save();render();break;}
+    case 'ev':addEv(b.dataset.type,b.dataset.side);break;
+    case 'evdel':if(m){m.events=m.events.filter(function(x){return x.id!==b.dataset.id;});save();render();}break;
+    case 'addteam':addTeam();break;
+    case 'delteam':{
+      var id=b.dataset.id;
+      S.teams=S.teams.filter(function(t){return t.id!==id;});
+      S.matches=S.matches.filter(function(x){return x.home!==id&&x.away!==id;});
+      if(!cur())S.sel=null;
+      running=false;save();render();break;}
+    case 'gen':{
+      if(S.teams.length<2){toast('Дор хаяж 2 баг хэрэгтэй');break;}
+      running=false;S.sel=null;
+      var rs=roundRobin(),out=[];
+      rs.forEach(function(p,i){p.forEach(function(x){out.push(newMatch(i+1,x[0],x[1]));});});
+      if(+S.set.legs===2)rs.forEach(function(p,i){p.forEach(function(x){out.push(newMatch(rs.length+i+1,x[1],x[0]));});});
+      S.matches=out;save();view='matches';render();break;}
+    case 'addmatch':{
+      var h=document.getElementById('mh').value,a=document.getElementById('ma').value;
+      if(h===a){toast('Өөр өөр баг сонгоно уу');break;}
+      var mr=S.matches.reduce(function(x,y){return Math.max(x,y.round);},0)||1;
+      S.matches.push(newMatch(mr,h,a));save();render();break;}
+    case 'reset':
+      running=false;S=JSON.parse(JSON.stringify(D));no={h:'',a:''};save();view='matches';render();break;
+  }
+});
+function addTeam(){
+  var el=document.getElementById('newTeam'),v=(el.value||'').trim();
+  if(!v)return;
+  if(S.teams.some(function(t){return t.name.toLowerCase()===v.toLowerCase();})){toast('Ийм нэртэй баг байна');return;}
+  S.teams.push({id:uid(),name:v});save();render();
+  var n=document.getElementById('newTeam');if(n)n.focus();
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&e.target.id==='newTeam')addTeam();
+  if(e.key==='Enter'&&e.target.id==='clk'){var b=document.querySelector('[data-act="setclock"]');if(b)b.click();}
+});
+document.addEventListener('input',function(e){
+  var t=e.target,k=t.dataset&&t.dataset.in;if(!k)return;
+  if(k==='no'){no[t.dataset.side]=t.value;return;}
+  if(k==='name'){S.name=t.value||D.name;document.getElementById('ttl').textContent=S.name;document.title=S.name+' — оноо';}
+  else if(k==='legs'){S.set.legs=+t.value;}
+  else{var n=parseInt(t.value,10);if(!isNaN(n)&&n>=0)S.set[k]=(k==='half'&&n<1)?1:n;}
+  save();
+});
+document.addEventListener('visibilitychange',function(){if(document.hidden)save();else last=Date.now();});
+
+render();
+})();
+</script>
+</body>
+</html>
